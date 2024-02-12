@@ -1,0 +1,23 @@
+org: natestgeorge
+app: just-football-api
+service: just-football-serverless
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  environment:
+    CFB_API_BASE_URL: https://api.collegefootballdata.com/
+    CFB_API_TOKEN: ${param:CFB_API_TOKEN, env:CFB_API_TOKEN}
+
+functions:
+  api:
+    handler: index.handler
+    events:
+      - httpApi:
+          path: /{any+}
+          method: get
+
+plugins:
+  - serverless-offline
