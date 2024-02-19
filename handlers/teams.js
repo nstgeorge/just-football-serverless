@@ -23,24 +23,23 @@ export const teamsHandler = async (event) => {
     }
   }
 
-  let result = {}
+  let gotFromAPI = false
 
   if (!teamsCache.has(`${GLOBAL_NAMESPACE}:teams:${teamID}`)) {
-    result = await fetch(process.env.SELF_URL + "api/teams")
+    const result = await fetch(process.env.SELF_URL + "api/teams")
     const body = await result.json()
 
-    result.metadata = { source: "API" }
+    gotFromAPI = true
 
     // Build cache based on all teams data
     body.forEach((team) => {
-      if (parseInt(team.id) === parseInt(teamID)) console.log(`cacheKey: ${GLOBAL_NAMESPACE}:teams:${team.id}`)
       teamsCache.set(`${GLOBAL_NAMESPACE}:teams:${team.id}`, team)
     })
   }
 
-  result = teamsCache.get(`${GLOBAL_NAMESPACE}:teams:${teamID}`)
+  const cacheValue = teamsCache.get(`${GLOBAL_NAMESPACE}:teams:${teamID}`)
 
-  if (!result) {
+  if (!cacheValue) {
     return {
       statusCode: 404,
       body: JSON.stringify({
@@ -57,10 +56,10 @@ export const teamsHandler = async (event) => {
     },
     body: JSON.stringify(
       {
+        ...cacheValue,
         metadata: {
-          source: "TTLCache"
-        },
-        ...result
+          source: gotFromAPI ? "API" : "TTLCache"
+        }
       }
     )
   }
