@@ -7,17 +7,51 @@ useDotenv: true
 provider:
   name: aws
   runtime: nodejs20.x
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "lambda:InvokeFunction"
+      Resource: "*"
   environment:
     CFB_API_BASE_URL: https://api.collegefootballdata.com/
     CFB_API_TOKEN: ${param:CFB_API_TOKEN, env:CFB_API_TOKEN}
+    SELF_URL: ${param:SELF_URL, env:SELF_URL}
+    GLOBAL_NAMESPACE: ${param:GLOBAL_NAMESPACE, env:GLOBAL_NAMESPACE, "JustFootball"}
+    TTL_TEAMS_MAX: ${param:TTL_TEAMS_MAX, env:TTL_TEAMS_MAX, 10000}
+    TTL_TEAMS_MS: ${param:TTL_TEAMS_MS, env:TTL_TEAMS_MS, 600000}
 
 functions:
   api:
     handler: index.handler
     events:
-      - httpApi:
-          path: /{any+}
+      - http:
+          path: /api/{any+}
           method: get
+          cors: true
+          caching:
+            enabled: true
+  
+  teams:
+    handler: handlers/teams.teamsHandler
+    events:
+      - http:
+          path: /teams/{id}
+          method: get
+          cors: true
+          caching:
+            enabled: true
+
+      - http:
+          path: /teams
+          method: get
+          cors: true
+          caching:
+            enabled: true
+
+custom: 
+  apiGatewayCaching:
+    enabled: true
 
 plugins:
   - serverless-offline
+  - serverless-api-gateway-caching

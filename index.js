@@ -1,20 +1,14 @@
-const transformResponseToObject = async (res) => ({
-  statusCode: res.status,
-  headers: {
-    'Access-Control-Allow-Origin': '*', // TODO: Put something real here
-    ...res.headers
-  },
-  body: JSON.stringify(!res.ok ? { message: await res.text() } : await res.json())
-})
+import transformResponseToObject from "./utils/transformResponseToObject.js"
 
 /**
  * Handle all HTTP requests. All paths are proxied here.
  */
-module.exports.handler = async (event) => {
-  if (event.rawPath.length > 1) {
-    const path = event.rawPath.startsWith('/') ? event.rawPath.slice(1) : event.rawPath
+export const handler = async (event) => {
+  let path = event.rawPath ?? event.path
+  if (path && path.length > 1) {
+    path = path.startsWith('/') ? path.slice(5) : path.slice(4)
     try {
-      const response = await fetch(`${process.env.CFB_API_BASE_URL}${path}?${event.rawQueryString}`, {
+      const response = await fetch(`${process.env.CFB_API_BASE_URL}${path}?${event.rawQueryString ?? ''}`, {
         headers: {
           Authorization: `Bearer ${process.env.CFB_API_TOKEN}`
         }

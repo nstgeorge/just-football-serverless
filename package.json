@@ -1,5 +1,10 @@
 {
+  "type": "module",
   "devDependencies": {
+    "serverless-api-gateway-caching": "^1.10.3",
     "serverless-offline": "^13.3.3"
+  },
+  "dependencies": {
+    "@isaacs/ttlcache": "^1.4.1"
   }
 }
