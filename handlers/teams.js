@@ -26,7 +26,7 @@ export const teamsHandler = async (event) => {
   let result = {}
 
   if (!teamsCache.has(`${GLOBAL_NAMESPACE}:teams:${teamID}`)) {
-    result = await fetch(process.env.SELF_URL + "/dev/api/teams")
+    result = await fetch(process.env.SELF_URL + "api/teams")
     const body = await result.json()
 
     result.metadata = { source: "API" }
