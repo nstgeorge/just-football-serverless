@@ -10,9 +10,8 @@ const teamsCache = new TTLCache({
 })
 
 export const teamsHandler = async (event) => {
-  const teamID = event.pathParameters.id
 
-  if (!teamID) {
+  if (!event.pathParameters.id) {
     return {
       statusCode: 400,
       body: JSON.stringify(
@@ -22,11 +21,15 @@ export const teamsHandler = async (event) => {
       )
     }
   }
-
+  const teamID = event.pathParameters.id
   let gotFromAPI = false
 
   if (!teamsCache.has(`${GLOBAL_NAMESPACE}:teams:${teamID}`)) {
-    const result = await fetch(process.env.SELF_URL + "api/teams")
+    const result = await fetch(process.env.SELF_URL + "proxy/teams", {
+      headers: {
+        Authorization: `Bearer ${process.env.SELF_API_KEY}`
+      }
+    })
     const body = await result.json()
 
     gotFromAPI = true

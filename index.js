@@ -6,7 +6,7 @@ import transformResponseToObject from "./utils/transformResponseToObject.js"
 export const handler = async (event) => {
   let path = event.rawPath ?? event.path
   if (path && path.length > 1) {
-    path = path.startsWith('/') ? path.slice(5) : path.slice(4)
+    path = path.startsWith('/') ? path.slice(7) : path.slice(6)
     try {
       const response = await fetch(`${process.env.CFB_API_BASE_URL}${path}?${event.rawQueryString ?? ''}`, {
         headers: {

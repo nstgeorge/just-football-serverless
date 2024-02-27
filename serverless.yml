@@ -7,46 +7,61 @@ useDotenv: true
 provider:
   name: aws
   runtime: nodejs20.x
+  httpApi:
+    disableDefaultEndpoint: true
+    authorizers:
+      authorizeByToken:
+        type: request
+        enableSimpleResponses: true
+        functionName: authorizeByToken
+
   iamRoleStatements:
     - Effect: "Allow"
       Action:
         - "lambda:InvokeFunction"
       Resource: "*"
+
   environment:
     CFB_API_BASE_URL: https://api.collegefootballdata.com/
     CFB_API_TOKEN: ${env:CFB_API_TOKEN, param:CFB_API_TOKEN}
     SELF_URL: ${env:SELF_URL, param:SELF_URL}
+    SELF_API_KEY: ${env:SELF_API_KEY, param:SELF_API_KEY}
     GLOBAL_NAMESPACE: ${env:GLOBAL_NAMESPACE, param:GLOBAL_NAMESPACE, "JustFootball"}
     TTL_TEAMS_MAX: ${env:TTL_TEAMS_MAX, param:TTL_TEAMS_MAX, 10000}
     TTL_TEAMS_MS: ${env:TTL_TEAMS_MS, param:TTL_TEAMS_MS, 600000}
 
 functions:
-  api:
+  authorizeByToken:
+    handler: handlers/authorizers.authorizeByToken
+
+  proxy:
     handler: index.handler
     events:
       - http:
-          path: /api/{any+}
+          path: /proxy/{any+}
           method: get
           cors: true
+          authorizer:
+            name: authorizeByToken
+            type: request
+            enableSimpleResponses: true
           caching:
             enabled: true
   
   teams:
     handler: handlers/teams.teamsHandler
     events:
-      - http:
+      - httpApi:
           path: /teams/{id}
           method: get
-          cors: true
-          caching:
-            enabled: true
+          authorizer: 
+            name: authorizeByToken
 
-      - http:
+      - httpApi:
           path: /teams
           method: get
-          cors: true
-          caching:
-            enabled: true
+          authorizer:
+            name: authorizeByToken
 
 custom: 
   apiGatewayCaching:
